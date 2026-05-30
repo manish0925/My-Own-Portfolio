@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Skills</h2>
+    <p>Expertise in analytics, data engineering, and tools for modern business intelligence.</p>
+</section>
+
+<section class="skills-grid">
+    {% for skill in skills %}
+    <article class="skill-card">
+        <h3>{{ skill['category'] }}</h3>
+        <ul>
+            {% for item in skill['items'].split(', ') %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+    </article>
+    {% endfor %}
+</section>
+{% endblock %}

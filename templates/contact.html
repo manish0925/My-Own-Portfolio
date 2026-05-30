@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Contact</h2>
+    <p>Get in touch to discuss analytics, dashboards, or data-driven projects.</p>
+</section>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="alert">
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+
+<section class="contact-grid">
+    <article class="contact-card">
+        <h3>Contact details</h3>
+        {% if contact %}
+        <p><strong>Email</strong><br><a href="mailto:{{ contact['email'] }}">{{ contact['email'] }}</a></p>
+        <p><strong>Phone</strong><br>{{ contact['phone'] }}</p>
+        <p><strong>Location</strong><br>{{ contact['location'] }}</p>
+        <p><strong>LinkedIn</strong><br><a href="{{ contact['linkedin'] }}" target="_blank">{{ contact['linkedin'] }}</a></p>
+        {% else %}
+        <p>Contact information not available.</p>
+        {% endif %}
+    </article>
+    <article class="contact-card">
+        <h3>Send a message</h3>
+        <form class="contact-form" action="/contact" method="POST">
+            <label for="name">Name</label>
+            <input id="name" type="text" name="name" placeholder="Your name">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" placeholder="Your email">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Write your message"></textarea>
+            <button type="submit">Send Message</button>
+        </form>
+    </article>
+</section>
+{% endblock %}

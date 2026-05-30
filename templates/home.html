@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-copy">
+        <span class="eyebrow">Data Portfolio</span>
+        <h1>Hi, I'm Manish 👋</h1>
+        <p class="hero-text">Data Analyst specializing in research-driven analytics, leveraging Python, SQL, and Power BI to perform descriptive, diagnostic, and predictive analysis. Currently advancing skills in Machine Learning and Deep Learning to build intelligent, data-driven solutions.</p>
+        <div class="hero-actions">
+            <a class="button" href="/projects">View Projects</a>
+            <a class="button button-secondary" href="/resume">Download Resume</a>
+            <a class="button button-secondary" href="https://github.com/manish0925">You Can also visit to GitHub</a>
+        </div>
+    </div>
+        <div class=\"hero-stats\">
+        <div class=\"stat-card\">
+            <strong>{{ stats['projects'] }}</strong>
+            <span>Projects completed</span>
+        </div>
+        <div class=\"stat-card\">
+            <strong>1 Years</strong>
+            <span>Data analytics experience</span>
+        </div>
+        <div class=\"stat-card\">
+            <strong>100+</strong>
+            <span>Dashboards and reports</span>
+        </div>
+    </div>
+</section>
+
+<section class="section-head">
+    <h2>Professional Summary</h2>
+    <p>Detail-oriented Data Analyst with experience in financial and market data analysis, specializing in identifying patterns, anomalies, and actionable insights. Proficient in Python, SQL, Excel, and Power BI with hands-on expertise in data cleaning, exploratory data analysis, statistical modeling, and backtesting strategies. Experienced in working with large datasets and building data-driven solutions to support business decision-making.</p>
+</section>
+
+<section class="features">
+    <div class="feature-card">
+        <h3>Data Analysis</h3>
+        <p>Advanced SQL and Python analysis to uncover patterns, optimize workflows, and monitor KPIs.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Reporting</h3>
+        <p>Interactive reports and visualizations that present technical analytics with clear, business-ready messaging.</p>
+    </div>
+    <div class="feature-card">
+        <h3>Automation</h3>
+        <p>Automated data pipelines and reusable workflows to keep insights current and delivery consistent.</p>
+    </div>
+</section>
+{% endblock %}

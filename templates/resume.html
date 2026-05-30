@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Resume</h2>
+    <p>Summary of professional experience, education, and core capabilities.</p>
+    <a class="button" href="{{ url_for('static', filename='Manish_Kushwaha_Resume.pdf') }}" download>Download Full Resume</a>
+</section>
+
+<section class="resume-grid">
+    <div class="resume-section card">
+        <h3>Experience</h3>
+        {% for exp in experience %}
+        <div class="resume-item">
+            <h4>{{ exp['title'] }}</h4>
+            <span>{{ exp['company'] }} — {{ exp['period'] }}</span>
+            <p>{{ exp['desc'] }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="resume-section card">
+        <h3>Education</h3>
+        <div class="resume-item">
+            <h4>Master of Computer Application</h4>
+            <span>Noida Institute of Engineering and Technology (2023-2025)</span>
+            <p>Focused on statistics, data modeling, and applied math for analytics.</p>
+        </div>
+        <div class="resume-item">
+            <h4>Bachelor of Science in Mathematics</h4>
+            <span>Deen Dayal Upadhyay Gorakhpur University (2020-2023)</span>
+            <p>Focused on statistics, data modeling, and applied math for analytics.</p>
+        </div>
+        <h3>Certifications</h3>
+        <div class="resume-item">
+            <p>Programming with Python - Internshala</p>
+            <p>Design Thinking for Innovation - Coursera</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

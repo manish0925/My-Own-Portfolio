@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Projects</h2>
+    <p>Real analytics work driven by SQL, Python, and visualization.</p>
+</section>
+
+{% if projects %}
+<section class="projects-grid">
+    {% for p in projects %}
+    <article class="project-card">
+        <h3>{{ p['title'] }}</h3>
+        <p>{{ p['desc'] }}</p>
+    </article>
+    {% endfor %}
+</section>
+{% else %}
+<p class="empty-state">No projects are available yet. Use the admin dashboard to add new work samples.</p>
+{% endif %}
+{% endblock %}

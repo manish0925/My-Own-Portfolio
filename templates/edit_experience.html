@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Edit Experience</h2>
+    <p>Update your professional experience.</p>
+</section>
+
+<div class="form-panel">
+    <form method="POST" class="contact-form">
+        <div id="experience-container">
+            {% for exp in experience %}
+            <div class="experience-entry">
+                <label>Title</label>
+                <input type="text" name="title" value="{{ exp['title'] }}">
+                <label>Company</label>
+                <input type="text" name="company" value="{{ exp['company'] }}">
+                <label>Period</label>
+                <input type="text" name="period" value="{{ exp['period'] }}">
+                <label>Description</label>
+                <textarea name="desc">{{ exp['desc'] }}</textarea>
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" onclick="addExperience()">Add Experience</button>
+        <button type="submit">Save Changes</button>
+    </form>
+</div>
+
+<script>
+function addExperience() {
+    const container = document.getElementById('experience-container');
+    const div = document.createElement('div');
+    div.className = 'experience-entry';
+    div.innerHTML = `
+        <label>Title</label>
+        <input type="text" name="title" placeholder="Job Title">
+        <label>Company</label>
+        <input type="text" name="company" placeholder="Company Name">
+        <label>Period</label>
+        <input type="text" name="period" placeholder="e.g., 2020 - 2022">
+        <label>Description</label>
+        <textarea name="desc" placeholder="Job description"></textarea>
+    `;
+    container.appendChild(div);
+}
+</script>
+{% endblock %}

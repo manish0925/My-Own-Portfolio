@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Admin Dashboard</h2>
+    <p>Manage portfolio content: projects, skills, experience, and contact info.</p>
+</section>
+
+<div class="dashboard-actions">
+    <a class="button" href="/add_project">Add Project</a>
+    <a class="button button-secondary" href="/edit_skills">Edit Skills</a>
+    <a class="button button-secondary" href="/edit_experience">Edit Experience</a>
+    <a class="button button-secondary" href="/edit_contact">Edit Contact</a>
+    <a class="button button-secondary" href="/change_password">Change Password</a>
+    <a class="button button-secondary" href="/logout">Logout</a>
+</div>
+
+<section class="card">
+    <h3>Projects ({{ projects|length }})</h3>
+    {% if projects %}
+    <ul class="project-list">
+        {% for p in projects %}
+        <li>
+            <strong>{{ p['title'] }}</strong>
+            <p>{{ p['desc'] }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No projects yet.</p>
+    {% endif %}
+</section>
+
+<section class="card">
+    <h3>Skills</h3>
+    {% for skill in skills %}
+    <p><strong>{{ skill['category'] }}</strong>: {{ skill['items'] }}</p>
+    {% endfor %}
+</section>
+
+<section class="card">
+    <h3>Experience</h3>
+    {% for exp in experience %}
+    <p><strong>{{ exp['title'] }}</strong> at {{ exp['company'] }} ({{ exp['period'] }})</p>
+    {% endfor %}
+</section>
+
+<section class="card">
+    <h3>Contact Info</h3>
+    {% if contact %}
+    <p>Email: {{ contact['email'] }}</p>
+    <p>Phone: {{ contact['phone'] }}</p>
+    <p>Location: {{ contact['location'] }}</p>
+    <p>LinkedIn: {{ contact['linkedin'] }}</p>
+    {% else %}
+    <p>No contact info set.</p>
+    {% endif %}
+</section>
+{% endblock %}

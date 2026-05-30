@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Admin Login</h2>
+    <p>Enter your credentials to manage portfolio projects.</p>
+</section>
+
+<div class="form-panel">
+    {% if error %}
+    <div class="alert">{{ error }}</div>
+    {% endif %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert">
+            {% for message in messages %}
+            <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+    <form method="POST" class="contact-form">
+        <label for="username">Username</label>
+        <input id="username" type="text" name="username" placeholder="Username">
+        <label for="password">Password</label>
+        <input id="password" type="password" name="password" placeholder="Password">
+        <button type="submit">Login</button>
+    </form>
+    <p style="margin-top: 16px; text-align: center;"><a href="{{ url_for('forgot_password') }}">Forgot password?</a></p>
+</div>
+{% endblock %}

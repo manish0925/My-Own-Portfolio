@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Edit Contact Info</h2>
+    <p>Update your contact details.</p>
+</section>
+
+<div class="form-panel">
+    <form method="POST" class="contact-form">
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email" value="{{ contact['email'] if contact else '' }}">
+        <label for="phone">Phone</label>
+        <input id="phone" type="text" name="phone" value="{{ contact['phone'] if contact else '' }}">
+        <label for="location">Location</label>
+        <input id="location" type="text" name="location" value="{{ contact['location'] if contact else '' }}">
+        <label for="linkedin">LinkedIn URL</label>
+        <input id="linkedin" type="url" name="linkedin" value="{{ contact['linkedin'] if contact else '' }}">
+        <button type="submit">Save Changes</button>
+    </form>
+</div>
+{% endblock %}

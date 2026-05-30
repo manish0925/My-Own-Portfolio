@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Edit Skills</h2>
+    <p>Update your skills categories and items.</p>
+</section>
+
+<div class="form-panel">
+    <form method="POST" class="contact-form">
+        <div id="skills-container">
+            {% for skill in skills %}
+            <div class="skill-entry">
+                <label>Category</label>
+                <input type="text" name="category" value="{{ skill['category'] }}">
+                <label>Items (comma-separated)</label>
+                <input type="text" name="items" value="{{ skill['items'] }}">
+            </div>
+            {% endfor %}
+        </div>
+        <button type="button" onclick="addSkill()">Add Skill</button>
+        <button type="submit">Save Changes</button>
+    </form>
+</div>
+
+<script>
+function addSkill() {
+    const container = document.getElementById('skills-container');
+    const div = document.createElement('div');
+    div.className = 'skill-entry';
+    div.innerHTML = `
+        <label>Category</label>
+        <input type="text" name="category" placeholder="Skill Category">
+        <label>Items (comma-separated)</label>
+        <input type="text" name="items" placeholder="Item1, Item2, Item3">
+    `;
+    container.appendChild(div);
+}
+</script>
+{% endblock %}

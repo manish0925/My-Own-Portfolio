@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manish Kumar | Data Analyst Portfolio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<header>
+    <nav class="nav-container">
+        <div class="brand"><a href="/">MK</a></div>
+
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/skills">Skills</a>
+            <a href="/projects">Projects</a>
+            <a href="/resume">Resume</a>
+            <a href="/contact">Contact</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<footer>
+    <div class="footer-content">
+        <p class="footer-text">
+            Transforming data into actionable insights using analytics, research, and machine learning.
+        </p>
+
+        <div class="footer-links">
+            <a href="https://github.com/manish0925" target="_blank">GitHub</a>
+            <a href="https://www.linkedin.com/in/manish-kumar-568a392a8/" target="_blank">LinkedIn</a>
+        </div>
+
+        <p class="footer-copy">© 2026 Manish Kumar. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

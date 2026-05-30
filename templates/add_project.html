@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-head">
+    <h2>Add Project</h2>
+    <p>Publish a new project entry to the portfolio page.</p>
+</section>
+
+<div class="form-panel">
+    {% if error %}
+    <div class="alert">{{ error }}</div>
+    {% endif %}
+    <form method="POST" class="contact-form">
+        <label for="title">Project Title</label>
+        <input id="title" type="text" name="title" placeholder="Project Title">
+        <label for="desc">Description</label>
+        <textarea id="desc" name="desc" placeholder="Description"></textarea>
+        <button type="submit">Add Project</button>
+    </form>
+</div>
+{% endblock %}
