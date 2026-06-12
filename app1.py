@@ -100,10 +100,10 @@ def init_db():
         # Insert default contact info if empty
         if not ContactInfo.query.first():
             default_contact = ContactInfo(
-                email="manish@example.com",
-                phone="+91 12345 67890",
+                email="manishkumar96963172@gmail.com",
+                phone="+91 9696317234",
                 location="India",
-                linkedin="https://www.linkedin.com/in/manish"
+                linkedin="https://www.linkedin.com/in/manish-kumar-568a392a8/"
             )
             db.session.add(default_contact)
 
