@@ -63,12 +63,12 @@ class ContactInfo(db.Model):
     location = db.Column(db.String(200))
     linkedin = db.Column(db.String(300))
 
-# ✅ FIX 1: AdminUser mein email field add kiya
+# ✅ Email column included
 class AdminUser(db.Model):
     __tablename__ = 'admin_users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    email = db.Column(db.String(200), nullable=True)  # ✅ NEW FIELD
+    email = db.Column(db.String(200), nullable=True)
     password = db.Column(db.String(300), nullable=False)
     reset_token = db.Column(db.String(100))
     reset_token_expiry = db.Column(db.BigInteger)
@@ -76,8 +76,31 @@ class AdminUser(db.Model):
 # ---------------- INIT DATABASE ----------------
 def init_db():
     with app.app_context():
+
+        # ✅ MIGRATION: Pehle missing columns add karo
+        try:
+            with db.engine.connect() as conn:
+                result = conn.execute(db.text("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='admin_users' 
+                    AND column_name='email'
+                """))
+                if not result.fetchone():
+                    conn.execute(db.text(
+                        "ALTER TABLE admin_users ADD COLUMN email VARCHAR(200)"
+                    ))
+                    conn.commit()
+                    print("[MIGRATION] email column added to admin_users table")
+                else:
+                    print("[MIGRATION] email column already exists - OK")
+        except Exception as e:
+            print(f"[MIGRATION ERROR] {e}")
+
+        # Tables banao
         db.create_all()
 
+        # Default skills
         if not Skill.query.first():
             default_skills = [
                 Skill(
@@ -95,13 +118,14 @@ def init_db():
             ]
             db.session.bulk_save_objects(default_skills)
 
+        # Default experience
         if not Experience.query.first():
             default_exp = [
                 Experience(
                     title="Data Analyst",
                     company="Company Name",
                     period="2022 to present",
-                    desc="Developed dashboards and automated reports."
+                    desc="Developed dashboards and automated reports for business units."
                 ),
                 Experience(
                     title="Junior Analyst",
@@ -112,6 +136,7 @@ def init_db():
             ]
             db.session.bulk_save_objects(default_exp)
 
+        # Default contact
         if not ContactInfo.query.first():
             default_contact = ContactInfo(
                 email="manishkumar96963172@gmail.com",
@@ -121,21 +146,23 @@ def init_db():
             )
             db.session.add(default_contact)
 
-        # ✅ FIX 2: Default admin mein email bhi save karo
+        # Default admin
         if not AdminUser.query.first():
             default_admin = AdminUser(
                 username="admin",
-                email=os.getenv('MAIL_USERNAME'),  # ✅ Email env se lo
+                email=os.getenv('MAIL_USERNAME'),
                 password=generate_password_hash("1234")
             )
             db.session.add(default_admin)
         else:
-            # ✅ FIX 3: Agar admin already hai but email nahi hai toh update karo
+            # Existing admin ka email update karo agar missing hai
             existing_admin = AdminUser.query.filter_by(username="admin").first()
             if existing_admin and not existing_admin.email:
                 existing_admin.email = os.getenv('MAIL_USERNAME')
+                print(f"[UPDATE] Admin email updated: {existing_admin.email}")
 
         db.session.commit()
+        print("[DB] Database ready!")
 
 init_db()
 
@@ -172,7 +199,6 @@ def contact():
             flash("Please provide both an email and a message.", "error")
             return render_template("contact.html", contact=contact_data)
 
-        # ✅ FIX 4: Recipients list properly set karo
         admin_email = app.config.get("MAIL_USERNAME")
         if not admin_email:
             flash("Mail configuration error. Please try again later.", "error")
@@ -187,10 +213,10 @@ def contact():
             )
             msg.reply_to = email
             mail.send(msg)
-            flash("Your message was sent successfully. I will respond soon.", "success")
+            flash("Your message was sent successfully!", "success")
         except Exception as e:
             print(f"[MAIL ERROR - Contact]: {e}")
-            flash("There was an error sending your message. Please try again later.", "error")
+            flash("Error sending message. Please try again later.", "error")
 
     return render_template("contact.html", contact=contact_data)
 
@@ -202,12 +228,11 @@ def resume():
 
 # ================= ADMIN =================
 
-# LOGIN
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
     if "admin" in session:
         return redirect("/dashboard")
-        
+
     error = None
     if request.method == "POST":
         user = request.form.get("username", "").strip()
@@ -219,14 +244,12 @@ def admin():
             admin_user = AdminUser.query.filter_by(username=user).first()
             if admin_user and check_password_hash(admin_user.password, pwd):
                 session["admin"] = True
-                session["admin_username"] = admin_user.username  # ✅ Username bhi save karo
-                flash("Welcome back!", "success")
+                session["admin_username"] = admin_user.username
                 return redirect("/dashboard")
             error = "Invalid username or password."
 
     return render_template("admin_login.html", error=error)
 
-# DASHBOARD
 @app.route("/dashboard")
 def dashboard():
     if "admin" not in session:
@@ -247,43 +270,6 @@ def dashboard():
         admin_email=admin_user.email if admin_user else ""
     )
 
-# ✅ FIX 5: Delete Project Route Add Kiya
-@app.route("/delete_project/<int:project_id>", methods=["POST"])
-def delete_project(project_id):
-    if "admin" not in session:
-        return redirect("/admin")
-
-    project = Project.query.get_or_404(project_id)
-    db.session.delete(project)
-    db.session.commit()
-    flash("Project deleted successfully.", "success")
-    return redirect("/dashboard")
-
-# ✅ FIX 6: Edit Project Route Add Kiya
-@app.route("/edit_project/<int:project_id>", methods=["GET", "POST"])
-def edit_project(project_id):
-    if "admin" not in session:
-        return redirect("/admin")
-
-    project = Project.query.get_or_404(project_id)
-    error = None
-
-    if request.method == "POST":
-        title = request.form.get("title", "").strip()
-        desc = request.form.get("desc", "").strip()
-
-        if not title or not desc:
-            error = "Please provide both title and description."
-        else:
-            project.title = title
-            project.desc = desc
-            db.session.commit()
-            flash("Project updated successfully.", "success")
-            return redirect("/dashboard")
-
-    return render_template("edit_project.html", project=project, error=error)
-
-# CHANGE PASSWORD
 @app.route("/change_password", methods=["GET", "POST"])
 def change_password():
     if "admin" not in session:
@@ -298,7 +284,7 @@ def change_password():
         if not current_password or not new_password or not confirm_password:
             error = "Please fill in all fields."
         elif len(new_password) < 6:
-            error = "New password must be at least 6 characters."  # ✅ Validation add
+            error = "New password must be at least 6 characters."
         elif new_password != confirm_password:
             error = "New passwords do not match."
         else:
@@ -313,30 +299,6 @@ def change_password():
 
     return render_template("change_password.html", error=error)
 
-# ✅ FIX 7: Update Admin Email Route Add Kiya
-@app.route("/update_admin_email", methods=["GET", "POST"])
-def update_admin_email():
-    if "admin" not in session:
-        return redirect("/admin")
-
-    error = None
-    admin_user = AdminUser.query.filter_by(username="admin").first()
-
-    if request.method == "POST":
-        new_email = request.form.get("email", "").strip()
-        if not new_email:
-            error = "Please enter an email address."
-        else:
-            admin_user.email = new_email
-            db.session.commit()
-            flash("Admin email updated successfully.", "success")
-            return redirect("/dashboard")
-
-    return render_template("update_admin_email.html", 
-                         current_email=admin_user.email if admin_user else "",
-                         error=error)
-
-# ✅ FIX 8: Forgot Password - Completely Fixed
 @app.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
     message = None
@@ -349,15 +311,13 @@ def forgot_password():
             message = "Please enter your email address."
             message_type = "error"
         else:
-            # ✅ Ab database mein email se dhundo
+            # ✅ Database mein email se dhundo
             admin_user = AdminUser.query.filter_by(email=email).first()
-
-            # ✅ Security: Hamesha same message dikhao
-            message = "If the email exists in our system, a reset link has been sent."
+            message = "If the email exists, a reset link has been sent."
             message_type = "success"
 
             if admin_user:
-                token = secrets.token_urlsafe(32)  # ✅ 32 bytes = more secure
+                token = secrets.token_urlsafe(32)
                 expiry = int(time.time()) + app.config['ADMIN_RESET_TOKEN_EXPIRY']
 
                 admin_user.reset_token = token
@@ -373,29 +333,25 @@ def forgot_password():
                         recipients=[email],
                         body=(
                             f"Hello,\n\n"
-                            f"You requested a password reset for your admin account.\n\n"
-                            f"Click the link below to reset your password:\n{reset_url}\n\n"
-                            f"This link will expire in 1 hour.\n\n"
-                            f"If you did not request this, please ignore this email.\n\n"
-                            f"Regards,\nPortfolio System"
+                            f"Password reset link:\n{reset_url}\n\n"
+                            f"This link expires in 1 hour.\n\n"
+                            f"If you did not request this, ignore this email."
                         )
                     )
                     mail.send(msg)
                     print(f"[INFO] Reset email sent to: {email}")
                 except Exception as e:
                     print(f"[MAIL ERROR - Forgot Password]: {e}")
-                    message = "Unable to send reset email. Please check mail configuration."
+                    message = "Unable to send reset email. Check mail configuration."
                     message_type = "error"
-                    # ✅ Token clear karo agar mail fail ho
                     admin_user.reset_token = None
                     admin_user.reset_token_expiry = None
                     db.session.commit()
 
-    return render_template("forgot_password.html", 
-                         message=message, 
-                         message_type=message_type)
+    return render_template("forgot_password.html",
+                           message=message,
+                           message_type=message_type)
 
-# RESET PASSWORD
 @app.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     error = None
@@ -420,20 +376,19 @@ def reset_password(token):
         if not new_password or not confirm_password:
             error = "Please fill in all fields."
         elif len(new_password) < 6:
-            error = "Password must be at least 6 characters."  # ✅ Validation
+            error = "Password must be at least 6 characters."
         elif new_password != confirm_password:
             error = "Passwords do not match."
         else:
             admin_user.password = generate_password_hash(new_password)
-            admin_user.reset_token = None       # ✅ Token clear karo
-            admin_user.reset_token_expiry = None # ✅ Expiry clear karo
+            admin_user.reset_token = None
+            admin_user.reset_token_expiry = None
             db.session.commit()
-            flash("Your password has been reset successfully. Please login.", "success")
+            flash("Password reset successful. Please login.", "success")
             return redirect("/admin")
 
     return render_template("reset_password.html", error=error, token=token)
 
-# ADD PROJECT
 @app.route("/add_project", methods=["GET", "POST"])
 def add_project():
     if "admin" not in session:
@@ -447,15 +402,45 @@ def add_project():
         if not title or not desc:
             error = "Please provide both title and description."
         else:
-            new_project = Project(title=title, desc=desc)
-            db.session.add(new_project)
+            db.session.add(Project(title=title, desc=desc))
             db.session.commit()
             flash("Project added successfully.", "success")
             return redirect("/dashboard")
 
     return render_template("add_project.html", error=error)
 
-# EDIT SKILLS
+@app.route("/delete_project/<int:project_id>", methods=["POST"])
+def delete_project(project_id):
+    if "admin" not in session:
+        return redirect("/admin")
+    project = Project.query.get_or_404(project_id)
+    db.session.delete(project)
+    db.session.commit()
+    flash("Project deleted.", "success")
+    return redirect("/dashboard")
+
+@app.route("/edit_project/<int:project_id>", methods=["GET", "POST"])
+def edit_project(project_id):
+    if "admin" not in session:
+        return redirect("/admin")
+
+    project = Project.query.get_or_404(project_id)
+    error = None
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        desc = request.form.get("desc", "").strip()
+        if not title or not desc:
+            error = "Please provide both title and description."
+        else:
+            project.title = title
+            project.desc = desc
+            db.session.commit()
+            flash("Project updated.", "success")
+            return redirect("/dashboard")
+
+    return render_template("edit_project.html", project=project, error=error)
+
 @app.route("/edit_skills", methods=["GET", "POST"])
 def edit_skills():
     if "admin" not in session:
@@ -464,23 +449,17 @@ def edit_skills():
     if request.method == "POST":
         categories = request.form.getlist("category")
         items_list = request.form.getlist("items")
-
-        if not categories:
-            flash("Please add at least one skill.", "error")
-            return redirect("/edit_skills")
-
         Skill.query.delete()
         for cat, it in zip(categories, items_list):
             if cat.strip() and it.strip():
                 db.session.add(Skill(category=cat.strip(), items=it.strip()))
         db.session.commit()
-        flash("Skills updated successfully.", "success")
+        flash("Skills updated.", "success")
         return redirect("/dashboard")
 
     all_skills = Skill.query.order_by(Skill.id).all()
     return render_template("edit_skills.html", skills=all_skills)
 
-# EDIT EXPERIENCE
 @app.route("/edit_experience", methods=["GET", "POST"])
 def edit_experience():
     if "admin" not in session:
@@ -491,7 +470,6 @@ def edit_experience():
         companies = request.form.getlist("company")
         periods = request.form.getlist("period")
         descs = request.form.getlist("desc")
-
         Experience.query.delete()
         for t, c, p, d in zip(titles, companies, periods, descs):
             if t.strip() and c.strip():
@@ -502,44 +480,57 @@ def edit_experience():
                     desc=d.strip()
                 ))
         db.session.commit()
-        flash("Experience updated successfully.", "success")
+        flash("Experience updated.", "success")
         return redirect("/dashboard")
 
     all_experience = Experience.query.order_by(Experience.id.desc()).all()
     return render_template("edit_experience.html", experience=all_experience)
 
-# EDIT CONTACT
 @app.route("/edit_contact", methods=["GET", "POST"])
 def edit_contact():
     if "admin" not in session:
         return redirect("/admin")
 
     if request.method == "POST":
-        email = request.form.get("email", "").strip()
-        phone = request.form.get("phone", "").strip()
-        location = request.form.get("location", "").strip()
-        linkedin = request.form.get("linkedin", "").strip()
-
         ContactInfo.query.delete()
-        new_contact = ContactInfo(
-            email=email,
-            phone=phone,
-            location=location,
-            linkedin=linkedin
-        )
-        db.session.add(new_contact)
+        db.session.add(ContactInfo(
+            email=request.form.get("email", "").strip(),
+            phone=request.form.get("phone", "").strip(),
+            location=request.form.get("location", "").strip(),
+            linkedin=request.form.get("linkedin", "").strip()
+        ))
         db.session.commit()
-        flash("Contact info updated successfully.", "success")
+        flash("Contact info updated.", "success")
         return redirect("/dashboard")
 
     contact = ContactInfo.query.first()
     return render_template("edit_contact.html", contact=contact)
 
-# LOGOUT
+@app.route("/update_admin_email", methods=["GET", "POST"])
+def update_admin_email():
+    if "admin" not in session:
+        return redirect("/admin")
+
+    error = None
+    admin_user = AdminUser.query.filter_by(username="admin").first()
+
+    if request.method == "POST":
+        new_email = request.form.get("email", "").strip()
+        if not new_email:
+            error = "Please enter an email address."
+        else:
+            admin_user.email = new_email
+            db.session.commit()
+            flash("Admin email updated successfully.", "success")
+            return redirect("/dashboard")
+
+    return render_template("update_admin_email.html",
+                           current_email=admin_user.email if admin_user else "",
+                           error=error)
+
 @app.route("/logout")
 def logout():
-    session.clear()  # ✅ Sirf admin nahi, poora session clear karo
-    flash("You have been logged out.", "info")
+    session.clear()
     return redirect("/")
 
 if __name__ == "__main__":
